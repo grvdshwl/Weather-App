@@ -1,25 +1,52 @@
-import logo from './logo.svg';
-import './App.css';
+import { connect } from "react-redux";
+import "./App.css";
+import { useEffect } from "react";
+import Card from "./component/card/card.component";
+import { initializeData } from "./redux/reducer/weather/weather.action";
+import LoadingSpinner from "./component/LoadingSpinner/LoadingSpinner.component";
+import Navigation from "./component/Navigation/Navigation.component";
+import { AppContainer } from "./component/Helper/Helper.component";
 
-function App() {
+// const API_KEY = "88f257bd7ecb498c90ab06b8aa33ddc2";
+
+function App({
+  initializeData,
+  weatherData,
+  isLoading,
+  hasLocationAccess,
+  cityError,
+}) {
+  useEffect(() => {
+    initializeData();
+  }, [initializeData]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Navigation data={weatherData} cityError={cityError} />
+      <AppContainer>
+        <Card
+          data={weatherData}
+          cityError={cityError}
+          hasLocationAccess={hasLocationAccess}
+        />
+      </AppContainer>
     </div>
   );
 }
 
-export default App;
+const mapStateToProps = ({ weather }) => ({
+  isLoading: weather.weatherLocationLoading,
+  hasLocationAccess: weather.hasLocationAccess,
+  weatherData: weather.weatherData,
+  cityError: weather.cityError,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  initializeData: () => dispatch(initializeData()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
